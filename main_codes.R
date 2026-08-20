@@ -1,63 +1,63 @@
 # Setup working directory
 setwd('C:/Users/Monika/Desktop/GSL')
 
-# 读取表达数据
+# Read the expression data
 exp <- read.table("GSL.txt", header = TRUE, sep = "\t", row.names = 1)
 
-# 筛选基因，去除表达值低的基因
+# Filter out low-expressed genes
 gene <- subset(exp, rowSums(exp)/ncol(exp) >= 0.5)
 
-# 转置矩阵，使样本在行，基因在列
+# Transpose matrix (samples in rows, genes in columns)
 gene <- t(gene)
 
-# 对样本进行层次聚类
+# Perform hierarchical clustering on the samples
 sampleTree <- hclust(dist(gene), method = "average")
 
-# 绘制样本聚类树，以检测异常样本
+# Plot a sample clustering tree to detect outliers
 plot(sampleTree, main = "Sample clustering to detect outliers", sub="", xlab="")
 
-# 设置软阈值的范围
+# Set the soft threshold range
 powers <- 1:20
 
-# 选择网络构建类型
+# Select a Network Topology
 type <- "unsigned"
 
-# 选择合适的软阈值
+# Select a proper soft threshold value
 sft <- pickSoftThreshold(gene, powerVector = powers, networkType = "unsigned", verbose = 5)
 
-# 设置图形布局为1行2列
+# Set the graphic layout to 1 row and 2 columns
 par(mfrow = c(1, 2))
 
-# 绘制尺度无关性曲线
+# 绘制尺度无关性曲线 Plotting Scale-Invariant Curves
 plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2], type = 'n', 
      xlab = 'Soft Threshold (power)', ylab = 'Scale Free Topology Model Fit,signed R^2', 
      main = paste('Scale independence'))
 text(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2], labels = powers, col = 'red')
 abline(h = 0.8, col = 'red')
 
-# 绘制平均连通性曲线
+# 绘制平均连通性曲线 Plotting the Average Connectivity Curve
 plot(sft$fitIndices[,1], sft$fitIndices[,5], 
      xlab = 'Soft Threshold (power)', ylab = 'Mean Connectivity', type = 'n', 
      main = paste('Mean connectivity'))
 text(sft$fitIndices[,1], sft$fitIndices[,5], labels = powers, col = 'red')
 
-# 构建基因共表达网络
+# Constructing a Gene Co-expression Network
 net <- blockwiseModules(gene, power = 13, 
                         maxBlockSize = 20000, TOMType = "unsigned", 
                         minModuleSize = 30, reassignThreshold = 0, mergeCutHeight = 0.25, 
                         numericLabels = TRUE, pamRespectsDendro = FALSE, 
                         saveTOMs = FALSE, verbose = 3)
 
-# 查看模块的数量
+# View the number of modules
 table(net$colors)
 
-# 将模块颜色标签转换为可视化的颜色
+# Convert module color labels to visual colors
 dynamicColors <- labels2colors(net$colors)
 
-# 查看动态颜色模块的数量
+# View the number of dynamic color modules
 table(dynamicColors)
 
-# 绘制基因树和模块颜色
+# Plotting Gene Trees and Module Colors
 plotDendroAndColors(net$dendrograms[[1]], dynamicColors[net$blockGenes[[1]]],
                     "dynamicColors",
                     dendroLabels = FALSE, hang = 0.03,
