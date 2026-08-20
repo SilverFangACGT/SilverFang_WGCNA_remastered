@@ -1,6 +1,11 @@
 # Setup working directory
 setwd('C:/Users/Monika/Desktop/GSL')
 
+# Load key packages
+library(WGCNA)
+options(stringsAsFactors = FALSE)
+enableWGCNAThreads() # 开启多线程加速矩阵计算
+
 # Read the expression data
 exp <- read.table("GSL.txt", header = TRUE, sep = "\t", row.names = 1)
 
