@@ -1,5 +1,5 @@
 # Setup working directory
-setwd('C:/Users/Monika/Desktop/GSL')
+setwd('/Users/funkyoung/Desktop/WGCNA')
 
 # Load key packages
 library(WGCNA)
