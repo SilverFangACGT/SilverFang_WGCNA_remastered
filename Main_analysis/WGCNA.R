@@ -123,13 +123,21 @@ textMatrix <- paste(signif(moduleTraitCor, 2), '\n(', signif(moduleTraitPvalue, 
 dim(textMatrix) <- dim(moduleTraitCor)
 
 # Set graphic margins
-par(mar = c(0, 0, 0, 0))
+par(mar = c(6, 8.5, 3, 3))
 
 # Plotting HeatMaps of modules and traits
-labeledHeatmap(Matrix = moduleTraitCor, main = paste('Module-trait'),
-               xLabels = names(trait), yLabels = names(module), ySymbols = names(module),
-               colorLabels = FALSE, colors = blueWhiteRed(100), cex.text = 0.6, zlim = c(-1,1),
-               textMatrix = textMatrix, setStdMargins = FALSE)
+labeledHeatmap(Matrix = moduleTraitCor, 
+               main = paste('Module-trait relationships'),
+               xLabels = names(trait), 
+               yLabels = names(module), 
+               ySymbols = names(module),
+               colorLabels = FALSE, 
+               colors = blueWhiteRed(100), 
+               cex.text = 0.5,       
+               cex.lab = 0.8,       
+               zlim = c(-1,1),
+               textMatrix = textMatrix, 
+               setStdMargins = TRUE) 
 
 # Create a directory to store Cytoscape output
 dir.create('cytoscape', recursive = TRUE)
