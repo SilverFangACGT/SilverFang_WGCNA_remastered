@@ -4,7 +4,7 @@ setwd('C:/Users/Monika/Desktop/GSL')
 # Load key packages
 library(WGCNA)
 options(stringsAsFactors = FALSE)
-enableWGCNAThreads() # 开启多线程加速矩阵计算
+enableWGCNAThreads() # Enable multithreading to speed up matrix calculations
 
 # Read the expression data
 exp <- read.table("GSL.txt", header = TRUE, sep = "\t", row.names = 1)
@@ -68,73 +68,73 @@ plotDendroAndColors(net$dendrograms[[1]], dynamicColors[net$blockGenes[[1]]],
                     dendroLabels = FALSE, hang = 0.03,
                     addGuide = TRUE, guideHang = 0.05)
 
-# 计算模块特征基因（ME）
+# Compute Module Eigengene (ME)
 MEList <- moduleEigengenes(gene, colors = dynamicColors)
 MEs <- MEList$eigengenes
 
-# 保存模块特征基因到文件
+# Save ME into files
 write.table(MEs, 'moduleEigengenes.txt', sep = '\t', col.names = NA, quote = FALSE)
 
-# 计算模块特征基因之间的相关性
+# Compute correlation between MEs
 ME_cor <- cor(MEs)
 ME_cor[1:6, 1:6]
 
-# 对模块特征基因进行层次聚类
+# Hierarchical Clustering MEs
 METree <- hclust(as.dist(1 - ME_cor), method = 'average')
 
-# 绘制模块特征基因聚类树
+# Plotting a Clustering Tree of MEs
 plot(METree, main = 'Clustering of module eigengenes', xlab = '', sub = '')
 abline(h = 0.2, col = 'blue')
 abline(h = 0.25, col = 'red')
 
-# 绘制模块特征基因网络图
+# Plot network of MEs
 plotEigengeneNetworks(MEs, '', cex.lab = 0.8, xLabelsAngle= 90,
                       marDendro = c(0, 4, 1, 2), marHeatmap = c(3, 4, 1, 2))
 
-# 合并相似模块
+# Merge similar modules
 merge_module <- mergeCloseModules(gene, dynamicColors, cutHeight = 0.2, verbose = 3)
 mergedColors <- merge_module$colors
 
-# 查看合并后的模块数量
+# Check the number after merging
 table(mergedColors)
 
-# 将基因和模块颜色对应关系保存到文件
+# Save the gene-to-module color mappings to a file
 gene_module <- data.frame(gene_name = colnames(gene),
                           module = mergedColors, stringsAsFactors = FALSE)
 write.table(gene_module, 'gene_module.txt', sep = '\t', col.names = NA, quote = FALSE)
 
-# 读取性状数据
+# Read trait data
 trait <- read.table("Trait.txt",
                     header = TRUE,
                     row.name = 1,
                     sep = "\t")
 
-# 获取合并后的模块特征基因
+# Retrieve the MEs of the merged modules
 module <- merge_module$newMEs
 
-# 计算模块与性状的相关性
+# Compute the correlation between module and traits
 moduleTraitCor <- cor(module, trait, use = 'p')
 
-# 计算相关性显著性
+# Calculating the significance of correlation
 moduleTraitPvalue <- corPvalueStudent(moduleTraitCor, nrow(module))
 
-# 生成相关性矩阵的文本表示
+# Text representations for generating correlation matrices
 textMatrix <- paste(signif(moduleTraitCor, 2), '\n(', signif(moduleTraitPvalue, 1), ')', sep = '')
 dim(textMatrix) <- dim(moduleTraitCor)
 
-# 设置图形边距
+# Set graphic margins
 par(mar = c(0, 0, 0, 0))
 
-# 绘制模块与性状的热图
+# Plotting HeatMaps of modules and traits
 labeledHeatmap(Matrix = moduleTraitCor, main = paste('Module-trait'),
                xLabels = names(trait), yLabels = names(module), ySymbols = names(module),
                colorLabels = FALSE, colors = blueWhiteRed(100), cex.text = 0.6, zlim = c(-1,1),
                textMatrix = textMatrix, setStdMargins = FALSE)
 
-# 创建用于保存Cytoscape输出的目录
+# Create a directory to store Cytoscape output
 dir.create('cytoscape', recursive = TRUE)
 
-# 导出每个模块的网络到Cytoscape
+# Export each module's network to Cytoscape
 for (block in 1:length(net$dendrograms)) {
   blockGenes <- net$blockGenes[[block]]
   blockColors <- dynamicColors[blockGenes]
